@@ -18,6 +18,7 @@ class DatadriftService:
         *,
         keyword: str | None = None,
         status: str | None = None,
+        pending: bool | None = None,
         page: int = 1,
         size: int = 20,
     ) -> tuple[list[dict[str, Any]], int]:
@@ -26,6 +27,8 @@ class DatadriftService:
             rows = [row for row in rows if keyword in str(row.get("检测编号", ""))]
         if status:
             rows = [row for row in rows if row.get("status") == status]
+        if pending is not None:
+            rows = [row for row in rows if bool(row.get("pending")) == pending]
         total = len(rows)
         start = max(page - 1, 0) * size
         return rows[start:start + size], total
@@ -59,3 +62,12 @@ class DatadriftService:
         entry["pending"] = target != STATUS_ORDER[-1]
         entry["abnormal"] = action in NEGATIVE_ACTIONS
         return entry, f"漂移检测已{action}"
+
+    def deliver_pending(self, entry_id: int, source: str) -> tuple[dict[str, Any] | None, str]:
+        """数据漂移待处理明细的投递入口：推荐策略熔断明细生效后把关联检测转入待处理。"""
+        entry = store.find(MODULE, entry_id)
+        if entry is None:
+            return None, f"漂移检测 {entry_id} 不存在或已归档"
+        entry["pending"] = True
+        entry["待处理来源"] = source
+        return entry, f"漂移检测 {entry.get('检测编号')} 已转入数据漂移待处理明细"

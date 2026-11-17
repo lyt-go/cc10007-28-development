@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/recommend", tags=["智能推荐"])
 
 service = RecommendService()
 
-LIST_FIELDS = ["策略编号", "推荐场景", "召回算法", "排序模型", "冷启动策略", "多样性权重", "刷新频率", "推荐条数上限"]
+LIST_FIELDS = ["策略编号", "推荐场景", "召回算法", "排序模型", "冷启动策略", "多样性权重", "刷新频率", "推荐条数上限", "监控数据集", "可用性", "最后可用召回结果"]
 STATUSES = ["草稿", "策略评审中", "已上线", "已下线"]
 
 
@@ -51,7 +51,7 @@ def create_entry(payload: EntryPayload) -> ActionResult:
 @router.post("/{entry_id}/actions", response_model=ActionResult)
 def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     """对单条推荐策略执行提交策略评审、上线策略、下线策略；不允许的动作会被拦下并说明原因。"""
-    action = str(payload.values.get("action") or "").strip()
+    action = str(payload.values.get("action") or payload.action or "").strip()
     entry, message = service.run_action(entry_id, action)
     if entry is None:
         return ActionResult(ok=False, message=message)

@@ -20,13 +20,14 @@ STATUSES = ["草稿", "规则评审中", "已启用", "已关闭"]
 def list_entries(
     keyword: str | None = Query(default=None, description="按检测编号检索"),
     status: str | None = Query(default=None, description="草稿、规则评审中、已启用、已关闭"),
+    pending: bool | None = Query(default=None, description="只看数据漂移待处理明细时传 true"),
     page: int = 1,
     size: int = 20,
 ) -> PageResult[dict]:
     """按检测编号与状态过滤数据漂移列表；没有数据时返回空页，不报错。"""
     if size > 200:
         raise HTTPException(status_code=400, detail="每页最多 200 条，请缩小分页范围")
-    items, total = service.list_entries(keyword=keyword, status=status, page=page, size=size)
+    items, total = service.list_entries(keyword=keyword, status=status, pending=pending, page=page, size=size)
     return PageResult(items=items, total=total, page=page, size=size)
 
 
@@ -51,7 +52,7 @@ def create_entry(payload: EntryPayload) -> ActionResult:
 @router.post("/{entry_id}/actions", response_model=ActionResult)
 def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     """对单条漂移检测执行提交规则评审、启用检测、关闭检测；不允许的动作会被拦下并说明原因。"""
-    action = str(payload.values.get("action") or "").strip()
+    action = str(payload.values.get("action") or payload.action or "").strip()
     entry, message = service.run_action(entry_id, action)
     if entry is None:
         return ActionResult(ok=False, message=message)

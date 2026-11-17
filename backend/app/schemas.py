@@ -26,6 +26,7 @@ class EntryPayload(BaseModel):
 
     values: dict[str, Any] = Field(default_factory=dict)
     remark: str | None = None
+    action: str | None = None
 
 
 
@@ -244,3 +245,20 @@ class TacticlibEntry(BaseModel):
     field_5: str | None = None  # 生效周期
     field_6: str | None = None  # 策略评分
     field_7: str | None = None  # 使用次数
+
+class RecofuseEntry(BaseModel):
+    """推荐策略熔断明细结构。"""
+
+    field_0: str | None = None  # 熔断编号
+    field_1: str | None = None  # 策略编号
+    field_2: str | None = None  # 推荐场景
+    field_3: str | None = None  # 监控数据集
+    field_4: str | None = None  # 检测编号
+    field_5: str | None = None  # 基线版本
+    field_6: str | None = None  # 漂移阈值
+    field_7: str | None = None  # 最近漂移值
+    field_8: str | None = None  # 处置结论
+    field_9: str | None = None  # 推荐可用性
+    field_10: str | None = None  # 最后可用召回结果
+    field_11: str | None = None  # 处理批次
+    field_12: str | None = None  # 业务凭证
